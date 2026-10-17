@@ -1,0 +1,235 @@
+[
+  {
+    "id": "e2879bb8-a11f-44eb-98b6-0c22efbd1345",
+    "filename": "iot_event_20261017_071749_e2879b.jpg",
+    "thumbnail": "thumb_iot_event_20261017_071749_e2879b.jpg",
+    "rawUrl": "/storage/raw/iot_event_20261017_071749_e2879b.jpg",
+    "thumbnailUrl": "/storage/thumbnails/thumb_iot_event_20261017_071749_e2879b.jpg",
+    "trigger": "button_press",
+    "timestamp": "2026-10-17T07:17:59.557508Z",
+    "createdAtFormatted": "Oct 17, 2026 - 07:17:59 AM UTC",
+    "originalSize": {
+      "width": 100,
+      "height": 100,
+      "bytes": 824,
+      "formatted": "824.0 B"
+    },
+    "thumbnailSize": {
+      "width": 100,
+      "height": 100,
+      "bytes": 360,
+      "formatted": "360.0 B"
+    },
+    "savingsPercent": 56.31,
+    "dominantColor": "#496c88",
+    "brightness": 39.5,
+    "uploadDurationMs": 2974.37,
+    "lambdaDurationMs": 4307.88,
+    "billedDurationMs": 4400,
+    "totalPipelineMs": 9686.04,
+    "cloudWatchLogs": [
+      "2026-10-17T07:17:55.248489Z [b17ff721] START RequestId: b17ff721-8cb2-49db-a463-8a9f96a5d828 Version: $LATEST",
+      "2026-10-17T07:17:55.248537Z [b17ff721] Lambda Triggered: Auto Thumbnail Generator for IoT Image Gallery",
+      "2026-10-17T07:17:55.248553Z [b17ff721] Received S3 Event: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261017_071749_e2879b.jpg",
+      "2026-10-17T07:17:55.248994Z [b17ff721] Fetching raw image from local storage: C:\\Users\\Purna Chandar Reddy\\OneDrive\\Desktop\\CloudComputing\\storage\\raw\\iot_event_20261017_071749_e2879b.jpg",
+      "2026-10-17T07:17:55.249324Z [b17ff721] Loaded raw image (824 bytes). Processing image with Pillow...",
+      "2026-10-17T07:17:55.264704Z [b17ff721] Original image specs: 100x100px, Format: JPEG, Mode: RGB",
+      "2026-10-17T07:17:55.265242Z [b17ff721] Generated thumbnail: 100x100px (Lanczos filter)",
+      "2026-10-17T07:17:55.265650Z [b17ff721] Compression completed: Original 824 B -> Thumbnail 360 B (56.31% reduction)",
+      "2026-10-17T07:17:55.267893Z [b17ff721] Saved thumbnail to local storage: C:\\Users\\Purna Chandar Reddy\\OneDrive\\Desktop\\CloudComputing\\storage\\thumbnails\\thumb_iot_event_20261017_071749_e2879b.jpg",
+      "2026-10-17T07:17:59.556255Z [b17ff721] Warning: Cloud S3 thumbnail upload skipped (An error occurred (ExpiredToken) when calling the PutObject operation: The provided token has expired.)",
+      "2026-10-17T07:17:59.556323Z [b17ff721] END RequestId: b17ff721-8cb2-49db-a463-8a9f96a5d828",
+      "2026-10-17T07:17:59.556337Z [b17ff721] REPORT RequestId: b17ff721-8cb2-49db-a463-8a9f96a5d828 Duration: 4307.88 ms Billed Duration: 4400 ms Memory Size: 128 MB Max Memory Used: 38 MB"
+    ],
+    "cloudMode": "AWS_CLOUD",
+    "awsLambdaInvoked": false,
+    "cloudInfo": {
+      "region": "us-east-1",
+      "rawBucket": "iot-gallery-raw-686525059626-us-east-1",
+      "thumbnailsBucket": "iot-gallery-thumbnails-686525059626-us-east-1",
+      "lambdaFunction": "IoTImageGalleryThumbnailer"
+    },
+    "sensors": {
+      "battery": 95,
+      "temperature": 25.0,
+      "lightLux": 410,
+      "deviceId": "ESP32-CAM-NODE-01",
+      "gpioButton": 14,
+      "gpioLed": 27
+    }
+  },
+  {
+    "id": "f046aae7-3be4-435d-bd6f-3f2d082d86b4",
+    "filename": "iot_event_20261015_052042_f046aa.jpg",
+    "thumbnail": "thumb_iot_event_20261015_052042_f046aa.jpg",
+    "rawUrl": "/storage/raw/iot_event_20261015_052042_f046aa.jpg",
+    "thumbnailUrl": "/storage/thumbnails/thumb_iot_event_20261015_052042_f046aa.jpg",
+    "trigger": "button_press",
+    "timestamp": "2026-10-15T05:20:52.571101Z",
+    "createdAtFormatted": "Oct 15, 2026 - 05:20:52 AM UTC",
+    "originalSize": {
+      "width": 640,
+      "height": 360,
+      "bytes": 34010,
+      "formatted": "33.2 KB"
+    },
+    "thumbnailSize": {
+      "width": 320,
+      "height": 180,
+      "bytes": 5117,
+      "formatted": "5.0 KB"
+    },
+    "savingsPercent": 84.95,
+    "dominantColor": "#172a5b",
+    "brightness": 16.4,
+    "uploadDurationMs": 2243.85,
+    "lambdaDurationMs": 4439.19,
+    "billedDurationMs": 4500,
+    "totalPipelineMs": 8296.03,
+    "cloudWatchLogs": [
+      "2026-10-15T05:20:46.590619Z [bc5ffe1c] START RequestId: bc5ffe1c-0597-481b-9ce5-05adc812bca1 Version: $LATEST",
+      "2026-10-15T05:20:46.590675Z [bc5ffe1c] Lambda Triggered: Auto Thumbnail Generator for IoT Image Gallery",
+      "2026-10-15T05:20:46.590707Z [bc5ffe1c] Received S3 Event: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261015_052042_f046aa.jpg",
+      "2026-10-15T05:20:47.290229Z [bc5ffe1c] Downloading from AWS S3: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261015_052042_f046aa.jpg",
+      "2026-10-15T05:20:48.946768Z [bc5ffe1c] Loaded raw image (34010 bytes). Processing image with Pillow...",
+      "2026-10-15T05:20:49.072496Z [bc5ffe1c] Original image specs: 640x360px, Format: JPEG, Mode: RGB",
+      "2026-10-15T05:20:49.087945Z [bc5ffe1c] Generated thumbnail: 320x180px (Lanczos filter)",
+      "2026-10-15T05:20:49.089439Z [bc5ffe1c] Compression completed: Original 34010 B -> Thumbnail 5117 B (84.95% reduction)",
+      "2026-10-15T05:20:51.029601Z [bc5ffe1c] Warning: Cloud S3 thumbnail upload skipped (An error occurred (ExpiredToken) when calling the PutObject operation: The provided token has expired.)",
+      "2026-10-15T05:20:51.029759Z [bc5ffe1c] END RequestId: bc5ffe1c-0597-481b-9ce5-05adc812bca1",
+      "2026-10-15T05:20:51.029783Z [bc5ffe1c] REPORT RequestId: bc5ffe1c-0597-481b-9ce5-05adc812bca1 Duration: 4439.19 ms Billed Duration: 4500 ms Memory Size: 128 MB Max Memory Used: 38 MB"
+    ],
+    "cloudMode": "AWS_CLOUD",
+    "awsLambdaInvoked": false,
+    "cloudInfo": {
+      "region": "us-east-1",
+      "rawBucket": "iot-gallery-raw-686525059626-us-east-1",
+      "thumbnailsBucket": "iot-gallery-thumbnails-686525059626-us-east-1",
+      "lambdaFunction": "IoTImageGalleryThumbnailer"
+    },
+    "sensors": {
+      "battery": 94,
+      "temperature": "27.8",
+      "lightLux": 400,
+      "deviceId": "ESP32-CAM-NODE-01",
+      "gpioButton": 14,
+      "gpioLed": 27
+    }
+  },
+  {
+    "id": "43d43074-5272-46a6-8c6b-eec3a7bf62c5",
+    "filename": "iot_event_20261015_052044_43d430.jpg",
+    "thumbnail": "thumb_iot_event_20261015_052044_43d430.jpg",
+    "rawUrl": "/storage/raw/iot_event_20261015_052044_43d430.jpg",
+    "thumbnailUrl": "/storage/thumbnails/thumb_iot_event_20261015_052044_43d430.jpg",
+    "trigger": "button_press",
+    "timestamp": "2026-10-15T05:20:52.531122Z",
+    "createdAtFormatted": "Oct 15, 2026 - 05:20:52 AM UTC",
+    "originalSize": {
+      "width": 640,
+      "height": 360,
+      "bytes": 33941,
+      "formatted": "33.1 KB"
+    },
+    "thumbnailSize": {
+      "width": 320,
+      "height": 180,
+      "bytes": 5027,
+      "formatted": "4.9 KB"
+    },
+    "savingsPercent": 85.19,
+    "dominantColor": "#172a5b",
+    "brightness": 16.4,
+    "uploadDurationMs": 1732.25,
+    "lambdaDurationMs": 2850.89,
+    "billedDurationMs": 2900,
+    "totalPipelineMs": 6085.03,
+    "cloudWatchLogs": [
+      "2026-10-15T05:20:48.119901Z [ef6c9823] START RequestId: ef6c9823-b22a-40f9-9750-eecdcb5ca8f1 Version: $LATEST",
+      "2026-10-15T05:20:48.119952Z [ef6c9823] Lambda Triggered: Auto Thumbnail Generator for IoT Image Gallery",
+      "2026-10-15T05:20:48.119976Z [ef6c9823] Received S3 Event: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261015_052044_43d430.jpg",
+      "2026-10-15T05:20:48.129155Z [ef6c9823] Downloading from AWS S3: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261015_052044_43d430.jpg",
+      "2026-10-15T05:20:49.130469Z [ef6c9823] Loaded raw image (33941 bytes). Processing image with Pillow...",
+      "2026-10-15T05:20:49.130987Z [ef6c9823] Original image specs: 640x360px, Format: JPEG, Mode: RGB",
+      "2026-10-15T05:20:49.143515Z [ef6c9823] Generated thumbnail: 320x180px (Lanczos filter)",
+      "2026-10-15T05:20:49.144741Z [ef6c9823] Compression completed: Original 33941 B -> Thumbnail 5027 B (85.19% reduction)",
+      "2026-10-15T05:20:50.970613Z [ef6c9823] Warning: Cloud S3 thumbnail upload skipped (An error occurred (ExpiredToken) when calling the PutObject operation: The provided token has expired.)",
+      "2026-10-15T05:20:50.970759Z [ef6c9823] END RequestId: ef6c9823-b22a-40f9-9750-eecdcb5ca8f1",
+      "2026-10-15T05:20:50.970798Z [ef6c9823] REPORT RequestId: ef6c9823-b22a-40f9-9750-eecdcb5ca8f1 Duration: 2850.89 ms Billed Duration: 2900 ms Memory Size: 128 MB Max Memory Used: 38 MB"
+    ],
+    "cloudMode": "AWS_CLOUD",
+    "awsLambdaInvoked": false,
+    "cloudInfo": {
+      "region": "us-east-1",
+      "rawBucket": "iot-gallery-raw-686525059626-us-east-1",
+      "thumbnailsBucket": "iot-gallery-thumbnails-686525059626-us-east-1",
+      "lambdaFunction": "IoTImageGalleryThumbnailer"
+    },
+    "sensors": {
+      "battery": 94,
+      "temperature": "28.4",
+      "lightLux": 402,
+      "deviceId": "ESP32-CAM-NODE-01",
+      "gpioButton": 14,
+      "gpioLed": 27
+    }
+  },
+  {
+    "id": "e373eea5-5b49-4f89-a317-d51c78067b54",
+    "filename": "iot_event_20261015_052043_e373ee.jpg",
+    "thumbnail": "thumb_iot_event_20261015_052043_e373ee.jpg",
+    "rawUrl": "/storage/raw/iot_event_20261015_052043_e373ee.jpg",
+    "thumbnailUrl": "/storage/thumbnails/thumb_iot_event_20261015_052043_e373ee.jpg",
+    "trigger": "button_press",
+    "timestamp": "2026-10-15T05:20:52.436884Z",
+    "createdAtFormatted": "Oct 15, 2026 - 05:20:52 AM UTC",
+    "originalSize": {
+      "width": 640,
+      "height": 360,
+      "bytes": 33774,
+      "formatted": "33.0 KB"
+    },
+    "thumbnailSize": {
+      "width": 320,
+      "height": 180,
+      "bytes": 5074,
+      "formatted": "5.0 KB"
+    },
+    "savingsPercent": 84.98,
+    "dominantColor": "#172a5b",
+    "brightness": 16.4,
+    "uploadDurationMs": 1405.74,
+    "lambdaDurationMs": 4149.52,
+    "billedDurationMs": 4200,
+    "totalPipelineMs": 7009.02,
+    "cloudWatchLogs": [
+      "2026-10-15T05:20:46.797217Z [986b2fe9] START RequestId: 986b2fe9-8eb5-41f4-8405-a574fdc3db5b Version: $LATEST",
+      "2026-10-15T05:20:46.797293Z [986b2fe9] Lambda Triggered: Auto Thumbnail Generator for IoT Image Gallery",
+      "2026-10-15T05:20:46.797333Z [986b2fe9] Received S3 Event: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261015_052043_e373ee.jpg",
+      "2026-10-15T05:20:47.326361Z [986b2fe9] Downloading from AWS S3: s3://iot-gallery-raw-686525059626-us-east-1/iot_event_20261015_052043_e373ee.jpg",
+      "2026-10-15T05:20:48.954540Z [986b2fe9] Loaded raw image (33774 bytes). Processing image with Pillow...",
+      "2026-10-15T05:20:49.074048Z [986b2fe9] Original image specs: 640x360px, Format: JPEG, Mode: RGB",
+      "2026-10-15T05:20:49.093752Z [986b2fe9] Generated thumbnail: 320x180px (Lanczos filter)",
+      "2026-10-15T05:20:49.094780Z [986b2fe9] Compression completed: Original 33774 B -> Thumbnail 5074 B (84.98% reduction)",
+      "2026-10-15T05:20:50.946568Z [986b2fe9] Warning: Cloud S3 thumbnail upload skipped (An error occurred (ExpiredToken) when calling the PutObject operation: The provided token has expired.)",
+      "2026-10-15T05:20:50.946682Z [986b2fe9] END RequestId: 986b2fe9-8eb5-41f4-8405-a574fdc3db5b",
+      "2026-10-15T05:20:50.946712Z [986b2fe9] REPORT RequestId: 986b2fe9-8eb5-41f4-8405-a574fdc3db5b Duration: 4149.52 ms Billed Duration: 4200 ms Memory Size: 128 MB Max Memory Used: 38 MB"
+    ],
+    "cloudMode": "AWS_CLOUD",
+    "awsLambdaInvoked": false,
+    "cloudInfo": {
+      "region": "us-east-1",
+      "rawBucket": "iot-gallery-raw-686525059626-us-east-1",
+      "thumbnailsBucket": "iot-gallery-thumbnails-686525059626-us-east-1",
+      "lambdaFunction": "IoTImageGalleryThumbnailer"
+    },
+    "sensors": {
+      "battery": 94,
+      "temperature": "27.6",
+      "lightLux": 449,
+      "deviceId": "ESP32-CAM-NODE-01",
+      "gpioButton": 14,
+      "gpioLed": 27
+    }
+  }
+]

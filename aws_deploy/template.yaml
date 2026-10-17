@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  IoT Image Gallery - Serverless Auto-Thumbnail Architecture
+  Press a button to capture an event; LED confirms upload; Image auto thumbnail via Lambda
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name
+
+Resources:
+  # 1. Raw Images S3 Bucket (Upload Target)
+  RawImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "iot-image-gallery-raw-${AWS::AccountId}-${Environment}"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST]
+            AllowedOrigins: ['*']
+
+  # 2. Thumbnails S3 Bucket (Output Target)
+  ThumbnailsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "iot-image-gallery-thumbnails-${AWS::AccountId}-${Environment}"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET]
+            AllowedOrigins: ['*']
+
+  # 3. AWS Lambda Function for Auto-Thumbnailing
+  AutoThumbnailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.11
+      MemorySize: 256
+      Timeout: 15
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          AWS_THUMBNAILS_BUCKET: !Ref ThumbnailsBucket
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub "iot-image-gallery-raw-${AWS::AccountId}-${Environment}"
+        - S3WritePolicy:
+            BucketName: !Sub "iot-image-gallery-thumbnails-${AWS::AccountId}-${Environment}"
+      Events:
+        RawImageUploadEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref RawImagesBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .jpg
+
+Outputs:
+  RawBucketName:
+    Description: "S3 Bucket for raw IoT image uploads"
+    Value: !Ref RawImagesBucket
+  ThumbnailsBucketName:
+    Description: "S3 Bucket for auto-generated thumbnails"
+    Value: !Ref ThumbnailsBucket
+  LambdaFunctionArn:
+    Description: "Arn of the Auto Thumbnail Lambda Function"
+    Value: !GetAtt AutoThumbnailFunction.Arn

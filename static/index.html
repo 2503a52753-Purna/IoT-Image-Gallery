@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IoT Image Gallery - Event capture via button, hardware LED upload confirmation, and auto thumbnailing via AWS Lambda.">
+  <title>IoT Image Gallery</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+            <path d="m8 17 4-4 4 4"/>
+            <path d="M12 13v9"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>IoT Image Gallery</h1>
+          <span class="subtitle">Cloud Computing • Event-Driven Serverless Pipeline</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-badge" id="deviceStatusBadge">
+          <span class="status-dot"></span>
+          <span>ESP32-CAM Node (ONLINE)</span>
+        </div>
+        <div class="status-badge" id="awsStatusBadge" style="cursor: pointer;" title="AWS Cloud Connection Status (Click to configure)">
+          <span class="status-dot" id="awsStatusDot" style="background: var(--accent-amber);"></span>
+          <span id="awsStatusText">AWS: Local Sim</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-primary" id="btnOpenAwsConnect" title="Connect or link your AWS Account credentials & S3/Lambda resources">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+          </svg>
+          Link AWS Account
+        </button>
+
+        <button class="btn btn-secondary" id="burstCaptureBtn" title="Trigger 3 rapid captures to test Lambda concurrency">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Burst Test (3x)
+        </button>
+
+        <button class="btn btn-secondary" id="btnOpenAwsSpec" title="View Cloud Computing Architecture & AWS deployment spec">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          AWS Architecture
+        </button>
+
+        <button class="btn btn-danger" id="clearGalleryBtn" title="Clear all raw images & thumbnails">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <!-- Row 1: IoT Edge Control Center & Cloud Pipeline Flow -->
+    <div class="control-center-grid">
+
+      <!-- LEFT: IoT Hardware Node (Camera + Button + LED) -->
+      <section class="device-card" aria-label="IoT Edge Camera Device">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+              <circle cx="12" cy="13" r="3"/>
+            </svg>
+            <span>IoT Edge Device [ESP32-CAM]</span>
+          </div>
+
+          <button class="icon-btn" id="audioToggle" title="Toggle Audio FX (Shutter & Confirmation Chime)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="hardware-chassis">
+          <div class="chassis-screws screw-tl"></div>
+          <div class="chassis-screws screw-tr"></div>
+          <div class="chassis-screws screw-bl"></div>
+          <div class="chassis-screws screw-br"></div>
+
+          <!-- Camera Viewport -->
+          <div class="camera-viewport">
+            <canvas id="sceneCanvas" class="scene-canvas"></canvas>
+            <video id="webcamVideo" class="webcam-stream" autoplay playsinline muted></video>
+            <div class="shutter-flash" id="shutterFlash"></div>
+
+            <div class="camera-overlay">
+              <div class="overlay-top">
+                <div class="rec-indicator">
+                  <span class="rec-dot"></span>
+                  <span>LIVE SENSOR</span>
+                </div>
+                <div>1080p • 30FPS</div>
+              </div>
+              <div class="crosshair"></div>
+            </div>
+          </div>
+
+          <!-- Camera Mode Controls -->
+          <div class="camera-controls-bar">
+            <div class="pill-group">
+              <button class="pill-btn active" id="camModeSim">Simulated Scene</button>
+              <button class="pill-btn" id="camModeWebcam">Webcam Live</button>
+              <button class="pill-btn" id="camModeUpload">Upload File</button>
+            </div>
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.72rem;" id="btnNextScene">
+              🔄 Switch Scene
+            </button>
+          </div>
+        </div>
+
+        <!-- Hardware Controls: Big Push Button & LED Status Display -->
+        <div class="hardware-interaction-area">
+
+          <!-- Tactile Push Button -->
+          <div class="button-container">
+            <button class="tactile-button" id="tactileCaptureBtn" title="Press to capture event (or press Spacebar)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9a2 2 0 0 1 2-2h1.5l1.5-2h8l1.5 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+              </svg>
+            </button>
+            <span class="button-label">Press to Capture</span>
+            <span class="gpio-tag">GPIO 14 [INPUT] • SPACEBAR</span>
+          </div>
+
+          <!-- Hardware LED Indicator -->
+          <div class="led-container">
+            <div class="led-bezel">
+              <div class="led-lamp" id="hardwareLedLamp"></div>
+            </div>
+            <span class="led-status-text" id="hardwareLedStatusText">READY / STANDBY</span>
+            <span class="gpio-tag">GPIO 27 [LED CONFIRM]</span>
+          </div>
+        </div>
+
+        <!-- Telemetry Row -->
+        <div class="telemetry-row">
+          <div class="telemetry-item">
+            <span>🔋</span>
+            <span>Battery:</span>
+            <span class="telemetry-val">94%</span>
+          </div>
+          <div class="telemetry-item">
+            <span>🌡️</span>
+            <span>Temp:</span>
+            <span class="telemetry-val">27.4°C</span>
+          </div>
+          <div class="telemetry-item">
+            <span>☀️</span>
+            <span>Light:</span>
+            <span class="telemetry-val">420 lx</span>
+          </div>
+          <div class="telemetry-item">
+            <span>📶</span>
+            <span>RSSI:</span>
+            <span class="telemetry-val">-58 dBm</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Cloud Architecture Pipeline & Event Stream -->
+      <section class="pipeline-card" aria-label="Cloud Architecture Pipeline Visualizer">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>Live Serverless Cloud Pipeline</span>
+          </div>
+          <div class="status-badge" style="font-size: 0.72rem;">
+            <span>Auto-Thumbnail via Lambda</span>
+          </div>
+        </div>
+
+        <!-- Pipeline Flow Chart -->
+        <div class="pipeline-flow">
+          <!-- Node 1: IoT Button -->
+          <div class="pipeline-node" id="node-button" title="IoT Push Button (GPIO 14)">
+            <div class="node-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/>
+                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+              </svg>
+            </div>
+            <span class="node-title">1. IoT Button</span>
+            <span class="node-desc">Capture Event</span>
+          </div>
+
+          <div class="pipeline-connector" id="conn-button-gateway"></div>
+
+          <!-- Node 2: Cloud Ingestion Gateway -->
+          <div class="pipeline-node" id="node-gateway" title="API Gateway / MQTT Ingestion">
+            <div class="node-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                <line x1="6" y1="6" x2="6.01" y2="6"/>
+                <line x1="6" y1="18" x2="6.01" y2="18"/>
+              </svg>
+            </div>
+            <span class="node-title">2. API Gateway</span>
+            <span class="node-desc">HTTP Ingest</span>
+          </div>
+
+          <div class="pipeline-connector" id="conn-gateway-s3"></div>
+
+          <!-- Node 3: S3 Raw Bucket -->
+          <div class="pipeline-node" id="node-s3-raw" title="Raw Image S3 Bucket (Upload Confirmed -> Green LED!)">
+            <div class="node-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              </svg>
+            </div>
+            <span class="node-title">3. S3 Raw</span>
+            <span class="node-desc">LED Confirms</span>
+          </div>
+
+          <div class="pipeline-connector" id="conn-s3-lambda"></div>
+
+          <!-- Node 4: AWS Lambda Auto Thumbnail -->
+          <div class="pipeline-node" id="node-lambda" title="AWS Lambda Serverless Resizer">
+            <div class="node-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <span class="node-title">4. AWS Lambda</span>
+            <span class="node-desc">Auto-Thumbnail</span>
+          </div>
+
+          <div class="pipeline-connector" id="conn-lambda-thumb"></div>
+
+          <!-- Node 5: S3 Thumbnails Bucket & Gallery -->
+          <div class="pipeline-node" id="node-s3-thumb" title="Thumbnails S3 Bucket & Real-Time Gallery">
+            <div class="node-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <span class="node-title">5. S3 Thumbnails</span>
+            <span class="node-desc">Live Gallery</span>
+          </div>
+        </div>
+
+        <!-- Real-Time Activity Console -->
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);">
+            <span>CLOUD ACTIVITY CONSOLE</span>
+            <span>STATUS: LISTENING (SSE)</span>
+          </div>
+          <div class="console-box" id="cloudConsoleBox">
+            <div class="console-line">
+              <span class="console-ts">00:00:00</span>
+              <span class="console-tag info">SYSTEM</span>
+              <span class="console-msg">Cloud Computing IoT Image Gallery initialized. S3 Buckets & Serverless Lambda active.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Row 2: Performance Metrics Strip -->
+    <section class="metrics-strip" aria-label="Performance Metrics">
+      <div class="metric-card">
+        <div class="metric-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <div class="metric-data">
+          <h3 id="metricTotalEvents">0</h3>
+          <p>IoT Events Captured</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon emerald">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="metric-data">
+          <h3 id="metricSavedPct">0%</h3>
+          <p>Avg Storage Reduction</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div class="metric-data">
+          <h3 id="metricSavedBytes">0 KB</h3>
+          <p>Bandwidth / Storage Saved</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="metric-data">
+          <h3 id="metricAvgLambda">0 ms</h3>
+          <p>Avg Lambda Runtime</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Row 3: Gallery Grid Section -->
+    <section class="gallery-section" aria-label="Captured Events Gallery">
+      <div class="gallery-toolbar">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <h2 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Captured Events Gallery</h2>
+          <span class="status-badge" style="font-size: 0.75rem;">Auto-Generated Thumbnails</span>
+        </div>
+
+        <div class="filter-pills">
+          <button class="pill-btn active" data-filter="all">All Events</button>
+          <button class="pill-btn" data-filter="button_press">Hardware Button</button>
+          <button class="pill-btn" data-filter="manual_upload">Uploaded Files</button>
+        </div>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- Rendered via app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modals -->
+
+  <!-- 1. Comparison Modal: Original vs Thumbnail -->
+  <div class="modal-backdrop" id="compareModal" role="dialog" aria-modal="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2 id="compareModalTitle">Original vs Lambda Auto-Thumbnail</h2>
+        <button class="icon-btn" onclick="closeModal('compareModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="comparison-grid">
+          <!-- Raw Original Image -->
+          <div class="compare-box">
+            <div style="font-weight: 700; font-size: 0.9rem; color: #38bdf8;">RAW ORIGINAL (S3 Raw Bucket)</div>
+            <div class="compare-img-wrap">
+              <img id="compareRawImg" src="" alt="Raw Image">
+            </div>
+            <div class="compare-meta" id="compareRawMeta"></div>
+          </div>
+
+          <!-- Auto Thumbnail -->
+          <div class="compare-box">
+            <div style="font-weight: 700; font-size: 0.9rem; color: #34d399;">LAMBDA AUTO THUMBNAIL (S3 Thumbnails)</div>
+            <div class="compare-img-wrap">
+              <img id="compareThumbImg" src="" alt="Thumbnail Image">
+            </div>
+            <div class="compare-meta" id="compareThumbMeta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CloudWatch Lambda Logs Modal -->
+  <div class="modal-backdrop" id="logsModal" role="dialog" aria-modal="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2 id="logsModalTitle">AWS CloudWatch Lambda Execution Logs</h2>
+        <button class="icon-btn" onclick="closeModal('logsModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="cloudwatch-terminal" id="cloudWatchTerminal"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. AWS Architecture & Deployment Guide Modal -->
+  <div class="modal-backdrop" id="awsSpecModal" role="dialog" aria-modal="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2>Cloud Computing Architecture & AWS Deployment Specification</h2>
+        <button class="icon-btn" onclick="closeModal('awsSpecModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="font-size: 0.88rem; line-height: 1.6; color: #cbd5e1;">
+        <h3 style="color: #fff; margin-bottom: 0.5rem;">Product Architecture: IoT Image Gallery</h3>
+        <p>This software satisfies all requirements of the Cloud Computing problem statement:</p>
+        <ul style="padding-left: 1.25rem; margin: 0.75rem 0; display: flex; flex-direction: column; gap: 0.4rem;">
+          <li><strong>Press a button to capture an event:</strong> Physical tactile push button (GPIO 14) and keyboard trigger, recording camera frame & sensor telemetry.</li>
+          <li><strong>An LED confirms upload:</strong> Real-time hardware LED state machine (GPIO 27) transitions from Capturing & Uploading to solid bright <strong>Green Confirmation</strong> upon cloud receipt.</li>
+          <li><strong>Image auto thumbnail via Lambda:</strong> Serverless event-driven architecture invokes an AWS Lambda function upon S3 PutObject, resizing the image via Pillow with high compression efficiency.</li>
+        </ul>
+
+        <h3 style="color: #fff; margin: 1rem 0 0.5rem;">AWS Cloud Native Components</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.8rem; background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden;">
+          <thead>
+            <tr style="background: rgba(255,255,255,0.06); text-align: left;">
+              <th style="padding: 8px 12px; color: #fff;">Component</th>
+              <th style="padding: 8px 12px; color: #fff;">AWS Service</th>
+              <th style="padding: 8px 12px; color: #fff;">Function / Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 8px 12px; color: #38bdf8;">Edge Camera Node</td>
+              <td style="padding: 8px 12px;">AWS IoT Core / HTTP Gateway</td>
+              <td style="padding: 8px 12px;">Captures image event on button trigger, controls status LED.</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 8px 12px; color: #38bdf8;">Raw Bucket</td>
+              <td style="padding: 8px 12px;">Amazon S3 (Raw Storage)</td>
+              <td style="padding: 8px 12px;">Stores full-resolution capture; emits S3:ObjectCreated.</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 8px 12px; color: #38bdf8;">Auto Thumbnailer</td>
+              <td style="padding: 8px 12px;">AWS Lambda (Python 3.12)</td>
+              <td style="padding: 8px 12px;">Serverless resizer triggered automatically by S3 event.</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; color: #38bdf8;">Thumbnails Bucket</td>
+              <td style="padding: 8px 12px;">Amazon S3 (Thumbnails)</td>
+              <td style="padding: 8px 12px;">Optimized thumbnails served to the Image Gallery.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="color: #fff; margin-bottom: 0.5rem;">Deployment with AWS SAM</h3>
+        <p>A ready-to-deploy template is located in <code style="color: #38bdf8;">aws_deploy/template.yaml</code>. To deploy to your live AWS account:</p>
+        <pre style="background: #050811; padding: 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; color: #34d399; overflow-x: auto;">sam build
+sam deploy --guided</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Link AWS Cloud Account Modal -->
+  <div class="modal-backdrop" id="awsConnectModal" role="dialog" aria-modal="true">
+    <div class="modal-window" style="max-width: 780px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 style="margin: 0; font-size: 1.15rem;">Link AWS Account & Resources</h2>
+            <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Connect your AWS credentials, S3 raw & thumbnail buckets, and Lambda auto-resizer</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeModal('awsConnectModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Live Status Banner -->
+        <div class="cloud-status-banner disconnected" id="awsModalStatusBanner">
+          <div class="cloud-status-left">
+            <span class="status-dot" id="awsModalStatusDot" style="background: var(--accent-amber);"></span>
+            <div>
+              <div style="font-weight: 700; color: #fff;" id="awsModalStatusHeading">Mode: Local Simulation</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);" id="awsModalStatusSub">No live AWS credentials active. Emulating S3 storage and Lambda locally.</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary" id="btnRefreshAwsStatus" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Refresh Status
+          </button>
+        </div>
+
+        <!-- Modal Tabs -->
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-tab="tab-credentials">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Credentials & Settings
+          </button>
+          <button class="modal-tab" data-tab="tab-autoprovision">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            1-Click CLI Provisioner
+          </button>
+          <button class="modal-tab" data-tab="tab-iamguide">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            IAM & Console Guide
+          </button>
+        </div>
+
+        <!-- TAB 1: Credentials & Configuration Form -->
+        <div class="tab-pane active" id="tab-credentials">
+          <form id="awsConfigForm" onsubmit="return false;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">
+                  <span>AWS Access Key ID *</span>
+                  <span style="font-size: 0.72rem; color: var(--text-dim);">e.g. AKIA...</span>
+                </label>
+                <div class="input-with-action">
+                  <input type="text" class="form-control" id="cfgAwsAccessKey" placeholder="AKIAIOSFODNN7EXAMPLE" autocomplete="off" spellcheck="false">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span>AWS Secret Access Key *</span>
+                  <span style="font-size: 0.72rem; color: var(--text-dim);">40-character secret</span>
+                </label>
+                <div class="input-with-action">
+                  <input type="password" class="form-control" id="cfgAwsSecretKey" placeholder="••••••••••••••••••••••••••••••••" autocomplete="off" spellcheck="false">
+                  <button type="button" class="input-action-btn" id="toggleSecretKeyVisibility" title="Toggle visibility">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">
+                  <span>AWS Session Token (Required for AWS Academy / Learner Lab)</span>
+                  <span style="font-size: 0.72rem; color: #38bdf8;">AWS Academy / Vocareum</span>
+                </label>
+                <input type="password" class="form-control" id="cfgAwsSessionToken" placeholder="Paste aws_session_token from AWS Details here (starts with IQoJ...)" autocomplete="off" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">AWS Region *</label>
+                <select class="form-control" id="cfgAwsRegion">
+                  <option value="us-east-1" selected>US East (N. Virginia) [us-east-1] (AWS Academy Default)</option>
+                  <option value="us-east-2">US East (Ohio) [us-east-2]</option>
+                  <option value="us-west-1">US West (N. California) [us-west-1]</option>
+                  <option value="us-west-2">US West (Oregon) [us-west-2]</option>
+                  <option value="ap-south-1">Asia Pacific (Mumbai) [ap-south-1]</option>
+                  <option value="ap-southeast-1">Asia Pacific (Singapore) [ap-southeast-1]</option>
+                  <option value="eu-west-1">Europe (Ireland) [eu-west-1]</option>
+                  <option value="eu-central-1">Europe (Frankfurt) [eu-central-1]</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">AWS Lambda Function Name</label>
+                <input type="text" class="form-control" id="cfgAwsLambda" value="IoTImageGalleryThumbnailer" placeholder="IoTImageGalleryThumbnailer">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span>S3 Raw Bucket Name</span>
+                  <span style="font-size: 0.72rem; color: var(--text-dim);">Upload target</span>
+                </label>
+                <input type="text" class="form-control" id="cfgAwsRawBucket" placeholder="iot-gallery-raw-youraccount-us-east-1">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span>S3 Thumbnails Bucket Name</span>
+                  <span style="font-size: 0.72rem; color: var(--text-dim);">Lambda output target</span>
+                </label>
+                <input type="text" class="form-control" id="cfgAwsThumbBucket" placeholder="iot-gallery-thumbnails-youraccount-us-east-1">
+              </div>
+
+              <div class="form-group full-width" style="margin-top: 0.25rem;">
+                <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.85rem; color: #fff;">
+                  <input type="checkbox" id="cfgAwsModeToggle" checked style="width: 17px; height: 17px; accent-color: var(--accent-blue);">
+                  <span><strong>Enable Live AWS Cloud Mode</strong> (When unchecked, runs in local simulation mode)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Test Connection Results Box -->
+            <div class="test-result-card" id="testResultCard"></div>
+
+            <!-- Buttons -->
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+              <button type="button" class="btn btn-secondary" id="btnTestAwsConnection">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Test Connection</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="btnSaveAwsConfig">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                <span>Save & Activate Cloud Mode</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 2: Automated 1-Click Provisioner -->
+        <div class="tab-pane" id="tab-autoprovision">
+          <div style="font-size: 0.86rem; line-height: 1.6; color: #cbd5e1;">
+            <p style="margin-bottom: 0.75rem;">If you haven't created your S3 buckets or Lambda function yet, this repository includes an <strong>Automated Provisioner script</strong> that will do everything for you in under 60 seconds:</p>
+            <ul style="padding-left: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem;">
+              <li>Validates your AWS IAM credentials via AWS STS</li>
+              <li>Creates globally-unique S3 Raw and Thumbnails buckets with CORS</li>
+              <li>Creates the IAM Execution Role for AWS Lambda</li>
+              <li>Downloads the Linux Pillow wheel and packages <code style="color: #38bdf8;">lambda_function.py</code></li>
+              <li>Deploys the AWS Lambda function to your region</li>
+              <li>Configures the S3 ObjectCreated event trigger to invoke Lambda</li>
+              <li>Automatically writes all parameters to <code style="color: #38bdf8;">.env</code> and activates live mode</li>
+            </ul>
+
+            <h4 style="color: #fff; margin: 0.8rem 0 0.4rem; font-size: 0.88rem;">Step 1: Open PowerShell / Terminal in project directory</h4>
+            <div class="code-box">
+              <code>cd "c:\Users\Purna Chandar Reddy\OneDrive\Desktop\CloudComputing"</code>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText('cd &quot;c:\\Users\\Purna Chandar Reddy\\OneDrive\\Desktop\\CloudComputing&quot;')">Copy</button>
+            </div>
+
+            <h4 style="color: #fff; margin: 0.8rem 0 0.4rem; font-size: 0.88rem;">Step 2: Run the automated setup script</h4>
+            <div class="code-box">
+              <code>python setup_aws.py</code>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText('python setup_aws.py')">Copy</button>
+            </div>
+
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem;">Or run non-interactively with arguments:</p>
+            <div class="code-box">
+              <code style="font-size: 0.75rem;">python setup_aws.py --access-key YOUR_KEY --secret-key YOUR_SECRET --region us-east-1</code>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText('python setup_aws.py --access-key YOUR_KEY --secret-key YOUR_SECRET --region us-east-1')">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: IAM & Console Guide -->
+        <div class="tab-pane" id="tab-iamguide">
+          <div style="font-size: 0.86rem; line-height: 1.6; color: #cbd5e1;">
+            <h4 style="color: #fff; margin-bottom: 0.4rem;">How to get your AWS Access Keys:</h4>
+            <ol style="padding-left: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem;">
+              <li>Log in to the <strong>AWS Management Console</strong> (<a href="https://console.aws.amazon.com" target="_blank" style="color: #38bdf8;">console.aws.amazon.com</a>).</li>
+              <li>Go to <strong>IAM (Identity and Access Management)</strong> &rarr; <strong>Users</strong>.</li>
+              <li>Click your IAM User (or create one, e.g., <code style="color: #38bdf8;">iot-gallery-admin</code>).</li>
+              <li>Under the <strong>Security credentials</strong> tab, scroll down to <strong>Access keys</strong> and click <strong>Create access key</strong>.</li>
+              <li>Select <em>Command Line Interface (CLI)</em> or <em>Local code</em> and download your Access Key ID and Secret Access Key.</li>
+            </ol>
+
+            <h4 style="color: #fff; margin: 0.8rem 0 0.4rem;">Required IAM Permissions:</h4>
+            <p style="font-size: 0.82rem; margin-bottom: 0.5rem;">For full automated provisioning and execution, your IAM user needs policies covering:</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; font-size: 0.78rem;">
+              <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                <strong style="color: #38bdf8;">Amazon S3</strong>: <br><code style="color: #94a3b8;">s3:CreateBucket, s3:PutObject, s3:GetObject, s3:PutBucketNotification, s3:PutBucketCors</code>
+              </div>
+              <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                <strong style="color: #38bdf8;">AWS Lambda</strong>: <br><code style="color: #94a3b8;">lambda:CreateFunction, lambda:UpdateFunctionCode, lambda:InvokeFunction, lambda:AddPermission</code>
+              </div>
+              <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                <strong style="color: #38bdf8;">IAM Roles</strong>: <br><code style="color: #94a3b8;">iam:CreateRole, iam:PutRolePolicy, iam:PassRole</code>
+              </div>
+              <div style="background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                <strong style="color: #38bdf8;">AWS STS</strong>: <br><code style="color: #94a3b8;">sts:GetCallerIdentity</code>
+              </div>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--accent-emerald); margin-top: 0.6rem;">Tip: In an AWS Academy or personal sandbox account, the <strong>AdministratorAccess</strong> or <strong>PowerUserAccess</strong> policy gives all necessary permissions.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Hidden File Input for Custom Uploads -->
+  <input type="file" id="hiddenFileInput" accept="image/*" style="display: none;">
+
+  <!-- Application Scripts -->
+  <script src="/static/js/iot_simulator.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
