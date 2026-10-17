@@ -168,30 +168,94 @@ function logConsole(type, message) {
 /* ==========================================================================
    Gallery Loading & Rendering
    ========================================================================== */
+function resolveUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  return url.startsWith('/') ? url.slice(1) : url;
+}
+
+function addGalleryItemLocally(item) {
+  if (!currentItems.some(i => i.id === item.id)) {
+    currentItems.unshift(item);
+    try {
+      const localSaved = JSON.parse(localStorage.getItem('iot_gallery_items') || '[]');
+      localSaved.unshift(item);
+      localStorage.setItem('iot_gallery_items', JSON.stringify(localSaved.slice(0, 30)));
+    } catch (e) {}
+    renderGallery();
+    loadMetrics();
+  }
+}
+
 async function loadGallery() {
   try {
     const res = await fetch('/api/gallery');
+    if (!res.ok) throw new Error('API offline');
     const data = await res.json();
     if (data.success) {
       currentItems = data.items;
       renderGallery();
+      return;
     }
   } catch (e) {
-    console.error("Failed to load gallery", e);
+    // Static / GitHub Pages fallback
+    try {
+      const resFallback = await fetch('storage/database.json');
+      if (resFallback.ok) {
+        const fallbackItems = await resFallback.json();
+        let stored = [];
+        try { stored = JSON.parse(localStorage.getItem('iot_gallery_items') || '[]'); } catch (err) {}
+        const merged = [...stored];
+        fallbackItems.forEach(it => {
+          if (!merged.some(m => m.id === it.id)) merged.push(it);
+        });
+        currentItems = merged;
+        renderGallery();
+        loadMetrics();
+      }
+    } catch (err) {
+      console.warn("Could not load database.json fallback", err);
+    }
   }
 }
 
 async function loadMetrics() {
   try {
     const res = await fetch('/api/cloud/stats');
-    const data = await res.json();
-    if (data.success) {
-      document.getElementById('metricTotalEvents').textContent = data.totalEvents;
-      document.getElementById('metricSavedPct').textContent = `${data.overallSavingsPercent}%`;
-      document.getElementById('metricSavedBytes').textContent = formatBytes(data.bytesSaved);
-      document.getElementById('metricAvgLambda').textContent = `${data.avgLambdaDurationMs} ms`;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('metricTotalEvents').textContent = data.totalEvents;
+        document.getElementById('metricSavedPct').textContent = `${data.overallSavingsPercent}%`;
+        document.getElementById('metricSavedBytes').textContent = formatBytes(data.bytesSaved);
+        document.getElementById('metricAvgLambda').textContent = `${data.avgLambdaDurationMs} ms`;
+        return;
+      }
     }
   } catch (e) {}
+
+  if (currentItems && currentItems.length > 0) {
+    const total = currentItems.length;
+    let totalOrig = 0, totalThumb = 0, totalDuration = 0;
+    currentItems.forEach(it => {
+      totalOrig += (it.originalSize && it.originalSize.bytes) || 34000;
+      totalThumb += (it.thumbnailSize && it.thumbnailSize.bytes) || 5000;
+      totalDuration += it.lambdaDurationMs || 35;
+    });
+    const bytesSaved = Math.max(0, totalOrig - totalThumb);
+    const savingsPct = totalOrig > 0 ? ((bytesSaved / totalOrig) * 100).toFixed(1) : '85.0';
+    const avgDuration = Math.round(totalDuration / total);
+    const elTotal = document.getElementById('metricTotalEvents');
+    const elSavedPct = document.getElementById('metricSavedPct');
+    const elSavedBytes = document.getElementById('metricSavedBytes');
+    const elAvgLambda = document.getElementById('metricAvgLambda');
+    if (elTotal) elTotal.textContent = total;
+    if (elSavedPct) elSavedPct.textContent = `${savingsPct}%`;
+    if (elSavedBytes) elSavedBytes.textContent = formatBytes(bytesSaved);
+    if (elAvgLambda) elAvgLambda.textContent = `${avgDuration} ms`;
+  }
 }
 
 function renderGallery() {
@@ -225,7 +289,7 @@ function renderGallery() {
   grid.innerHTML = filtered.map(item => `
     <div class="gallery-card" id="card-${item.id}">
       <div class="gallery-card-thumb-wrap" onclick="openCompareModal('${item.id}')">
-        <img class="gallery-card-thumb" src="${item.thumbnailUrl}" alt="${item.filename}" loading="lazy" onerror="if(this.src && !this.src.endsWith('/storage/thumbnails/${item.thumbnail}')) { this.src='/storage/thumbnails/${item.thumbnail}'; }" />
+        <img class="gallery-card-thumb" src="${resolveUrl(item.thumbnailUrl)}" alt="${item.filename}" loading="lazy" onerror="if(this.src && !this.src.endsWith('${resolveUrl(item.thumbnail)}')) { this.src='storage/thumbnails/${item.thumbnail}'; }" />
         <span class="card-badge">⚡ -${item.savingsPercent}%</span>
         <span class="card-trigger-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -276,7 +340,7 @@ function renderGallery() {
                 <line x1="12" y1="19" x2="20" y2="19"/>
               </svg>
             </button>
-            <a class="icon-btn" title="Download Raw Image" href="${item.rawUrl}" download>
+            <a class="icon-btn" title="Download Raw Image" href="${resolveUrl(item.rawUrl)}" download>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
@@ -318,10 +382,12 @@ function openCompareModal(itemId) {
   const thumbMeta = document.getElementById('compareThumbMeta');
 
   title.textContent = `Comparison: ${item.filename}`;
-  rawImg.onerror = () => { if (rawImg.src && !rawImg.src.endsWith(`/storage/raw/${item.filename}`)) rawImg.src = `/storage/raw/${item.filename}`; };
-  thumbImg.onerror = () => { if (thumbImg.src && !thumbImg.src.endsWith(`/storage/thumbnails/${item.thumbnail}`)) thumbImg.src = `/storage/thumbnails/${item.thumbnail}`; };
-  rawImg.src = item.rawUrl;
-  thumbImg.src = item.thumbnailUrl;
+  const rUrl = resolveUrl(item.rawUrl);
+  const tUrl = resolveUrl(item.thumbnailUrl);
+  rawImg.onerror = () => { if (rawImg.src && !rawImg.src.endsWith(`storage/raw/${item.filename}`)) rawImg.src = `storage/raw/${item.filename}`; };
+  thumbImg.onerror = () => { if (thumbImg.src && !thumbImg.src.endsWith(`storage/thumbnails/${item.thumbnail}`)) thumbImg.src = `storage/thumbnails/${item.thumbnail}`; };
+  rawImg.src = rUrl;
+  thumbImg.src = tUrl;
 
   rawMeta.innerHTML = `
     <div><strong>Storage Location:</strong> s3://iot-image-gallery-raw/</div>
