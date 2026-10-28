@@ -100,8 +100,18 @@ def serve_raw(filename):
 def serve_thumbnail(filename):
     return send_from_directory(THUMB_DIR, filename)
 
+@app.route("/presentation.html")
+@app.route("/slides")
+def serve_presentation_html():
+    return send_from_directory(BASE_DIR, "presentation.html")
+
+@app.route("/IoT_Image_Gallery_Presentation.pdf")
+def serve_presentation_pdf():
+    return send_from_directory(BASE_DIR, "IoT_Image_Gallery_Presentation.pdf", as_attachment=True, download_name="IoT_Image_Gallery_Presentation.pdf")
+
 @app.route("/presentation")
 @app.route("/api/presentation")
+@app.route("/IoT_Image_Gallery_Presentation.pptx")
 def serve_presentation():
     """Serve the IoT Image Gallery presentation PPTX for download/viewing"""
     ppt_path = "IoT_Image_Gallery_Presentation.pptx"
