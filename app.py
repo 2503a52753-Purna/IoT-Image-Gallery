@@ -100,6 +100,25 @@ def serve_raw(filename):
 def serve_thumbnail(filename):
     return send_from_directory(THUMB_DIR, filename)
 
+@app.route("/presentation.html")
+@app.route("/slides")
+def serve_presentation_html():
+    return send_from_directory(BASE_DIR, "presentation.html")
+
+@app.route("/IoT_Image_Gallery_Presentation.pdf")
+def serve_presentation_pdf():
+    return send_from_directory(BASE_DIR, "IoT_Image_Gallery_Presentation.pdf", as_attachment=True, download_name="IoT_Image_Gallery_Presentation.pdf")
+
+@app.route("/presentation")
+@app.route("/api/presentation")
+@app.route("/IoT_Image_Gallery_Presentation.pptx")
+def serve_presentation():
+    """Serve the IoT Image Gallery presentation PPTX for download/viewing"""
+    ppt_path = "IoT_Image_Gallery_Presentation.pptx"
+    if not os.path.exists(os.path.join(BASE_DIR, ppt_path)):
+        ppt_path = "IoT_Image_Gallery_Presentation_Updated.pptx"
+    return send_from_directory(BASE_DIR, ppt_path, as_attachment=True, download_name="IoT_Image_Gallery_Presentation.pptx")
+
 # ----------------- REAL-TIME SSE STREAM -----------------
 @app.route("/api/events")
 def events_stream():

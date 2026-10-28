@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IoT Image Gallery - 24/7 Cloud Architecture Keynote Presentation Deck">
+  <title>IoT Image Gallery • Presentation Deck (24/7 Live)</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: #141c2e;
+      --card-border: #263452;
+      --neon-cyan: #00e5ff;
+      --neon-green: #00e676;
+      --neon-purple: #a855f7;
+      --neon-coral: #ff6384;
+      --text-white: #ffffff;
+      --text-light: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation */
+    header {
+      background: rgba(11, 15, 25, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(0, 230, 118, 0.12);
+      border: 1px solid rgba(0, 230, 118, 0.35);
+      color: var(--neon-green);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--neon-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--neon-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-white);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.825rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      font-family: inherit;
+    }
+
+    .btn-cyan {
+      background: rgba(0, 229, 255, 0.1);
+      border-color: rgba(0, 229, 255, 0.35);
+      color: var(--neon-cyan);
+    }
+    .btn-cyan:hover {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+      color: #fff;
+    }
+
+    .btn-purple {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: rgba(168, 85, 247, 0.35);
+      color: var(--neon-purple);
+    }
+    .btn-purple:hover {
+      background: rgba(168, 85, 247, 0.22);
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--card-border);
+      color: var(--text-light);
+    }
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-white);
+    }
+
+    /* Main Slide Presentation Stage */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .stage-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .slide-img.active {
+      display: block;
+    }
+
+    /* Floating navigation overlay buttons */
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(20, 28, 46, 0.8);
+      border: 1px solid var(--card-border);
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .nav-arrow:hover {
+      background: var(--neon-cyan);
+      color: #0b0f19;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+    }
+    .nav-arrow.prev { left: 14px; }
+    .nav-arrow.next { right: 14px; }
+
+    /* Controls bar underneath */
+    .controls-bar {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.5rem 0.25rem;
+      flex-wrap: wrap;
+    }
+
+    .slide-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .counter-highlight {
+      color: var(--neon-cyan);
+      font-weight: 700;
+    }
+
+    .slide-progress {
+      flex: 1;
+      height: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 9999px;
+      overflow: hidden;
+      max-width: 400px;
+      margin: 0 1rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 11.11%;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+      border-radius: 9999px;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Thumbnails drawer */
+    .thumb-strip {
+      display: flex;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding: 0.75rem 0.25rem 1rem;
+      width: 100%;
+      max-width: 1200px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--card-border) transparent;
+    }
+
+    .thumb-card {
+      flex: 0 0 110px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid var(--card-border);
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .thumb-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumb-card:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+      border-color: var(--neon-cyan);
+    }
+
+    .thumb-card.active {
+      opacity: 1;
+      border-color: var(--neon-green);
+      box-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .thumb-num {
+      position: absolute;
+      bottom: 2px;
+      left: 4px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Keyboard hints */
+    .key-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    kbd {
+      background: #1e293b;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      border: 1px solid #334155;
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .brand-sub { display: none; }
+      .slide-progress { display: none; }
+      .nav-arrow { width: 38px; height: 38px; }
+      .nav-arrow.prev { left: 8px; }
+      .nav-arrow.next { right: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="badge-live">
+        <span class="live-dot"></span>
+        24/7 CLOUD HOSTED
+      </div>
+      <div>
+        <div class="brand-title">IoT Image Gallery • Presentation</div>
+        <div class="brand-sub">Serverless Cloud Architecture & Edge Computing</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <!-- Direct PPT Download -->
+      <a class="btn btn-cyan" href="IoT_Image_Gallery_Presentation.pptx" download title="Download official PowerPoint presentation">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download .PPTX
+      </a>
+
+      <!-- Direct PDF Download -->
+      <a class="btn btn-purple" href="IoT_Image_Gallery_Presentation.pdf" download title="Download complete presentation in PDF format">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Download PDF
+      </a>
+
+      <!-- Office 365 Online -->
+      <a class="btn btn-ghost" href="https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2F2503a52753-purna.github.io%2FIoT-Image-Gallery%2FIoT_Image_Gallery_Presentation.pptx" target="_blank" rel="noopener noreferrer" title="Open in Microsoft PowerPoint Web App">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Office 365 Web
+      </a>
+
+      <!-- Back to Gallery -->
+      <a class="btn btn-ghost" href="index.html" title="Open Live IoT Gallery">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Live Gallery
+      </a>
+    </div>
+  </header>
+
+  <!-- Presentation Stage -->
+  <main>
+    <div class="stage-wrapper" id="stage">
+      <button class="nav-arrow prev" id="btnPrev" aria-label="Previous Slide">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <!-- Slides 1 to 9 -->
+      <img src="static/slides/Slide1.PNG" alt="Slide 1: Keynote Cover" class="slide-img active" data-slide="1">
+      <img src="static/slides/Slide2.PNG" alt="Slide 2: System Overview" class="slide-img" data-slide="2">
+      <img src="static/slides/Slide3.PNG" alt="Slide 3: Architecture" class="slide-img" data-slide="3">
+      <img src="static/slides/Slide4.PNG" alt="Slide 4: Hardware Edge Flow" class="slide-img" data-slide="4">
+      <img src="static/slides/Slide5.PNG" alt="Slide 5: Storage Breakdown" class="slide-img" data-slide="5">
+      <img src="static/slides/Slide6.PNG" alt="Slide 6: Lambda Function" class="slide-img" data-slide="6">
+      <img src="static/slides/Slide7.PNG" alt="Slide 7: Metrics & Optimization" class="slide-img" data-slide="7">
+      <img src="static/slides/Slide8.PNG" alt="Slide 8: Security & Reliability" class="slide-img" data-slide="8">
+      <img src="static/slides/Slide9.PNG" alt="Slide 9: Key Takeaways & Impact" class="slide-img" data-slide="9">
+
+      <button class="nav-arrow next" id="btnNext" aria-label="Next Slide">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <div class="slide-counter">
+        Slide <span class="counter-highlight" id="currentSlideNum">1</span> of <span id="totalSlidesNum">9</span>
+      </div>
+
+      <div class="slide-progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span class="key-hint">
+          <kbd>←</kbd> <kbd>→</kbd> Navigate
+        </span>
+        <button class="btn btn-ghost" id="btnFullscreen" title="Toggle Fullscreen">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+          Full Screen
+        </button>
+      </div>
+    </div>
+
+    <!-- Thumbnails Strip -->
+    <div class="thumb-strip" id="thumbStrip">
+      <div class="thumb-card active" data-index="1"><img src="static/slides/Slide1.PNG" alt="1"><span class="thumb-num">1</span></div>
+      <div class="thumb-card" data-index="2"><img src="static/slides/Slide2.PNG" alt="2"><span class="thumb-num">2</span></div>
+      <div class="thumb-card" data-index="3"><img src="static/slides/Slide3.PNG" alt="3"><span class="thumb-num">3</span></div>
+      <div class="thumb-card" data-index="4"><img src="static/slides/Slide4.PNG" alt="4"><span class="thumb-num">4</span></div>
+      <div class="thumb-card" data-index="5"><img src="static/slides/Slide5.PNG" alt="5"><span class="thumb-num">5</span></div>
+      <div class="thumb-card" data-index="6"><img src="static/slides/Slide6.PNG" alt="6"><span class="thumb-num">6</span></div>
+      <div class="thumb-card" data-index="7"><img src="static/slides/Slide7.PNG" alt="7"><span class="thumb-num">7</span></div>
+      <div class="thumb-card" data-index="8"><img src="static/slides/Slide8.PNG" alt="8"><span class="thumb-num">8</span></div>
+      <div class="thumb-card" data-index="9"><img src="static/slides/Slide9.PNG" alt="9"><span class="thumb-num">9</span></div>
+    </div>
+  </main>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide-img'));
+    const thumbs = Array.from(document.querySelectorAll('.thumb-card'));
+    const currentNumEl = document.getElementById('currentSlideNum');
+    const progressBar = document.getElementById('progressBar');
+    const totalSlides = slides.length;
+    let currentIndex = 0;
+
+    function goToSlide(idx) {
+      if (idx < 0) idx = totalSlides - 1;
+      if (idx >= totalSlides) idx = 0;
+      
+      slides[currentIndex].classList.remove('active');
+      thumbs[currentIndex].classList.remove('active');
+      
+      currentIndex = idx;
+      
+      slides[currentIndex].classList.add('active');
+      thumbs[currentIndex].classList.add('active');
+      thumbs[currentIndex].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      
+      currentNumEl.textContent = currentIndex + 1;
+      progressBar.style.width = `${((currentIndex + 1) / totalSlides) * 100}%`;
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => goToSlide(currentIndex - 1));
+    document.getElementById('btnNext').addEventListener('click', () => goToSlide(currentIndex + 1));
+
+    thumbs.forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        const idx = parseInt(thumb.getAttribute('data-index'), 10) - 1;
+        goToSlide(idx);
+      });
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        goToSlide(currentIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        goToSlide(currentIndex - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(totalSlides - 1);
+      }
+    });
+
+    // Fullscreen support
+    const stage = document.getElementById('stage');
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        stage.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    stage.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    stage.addEventListener('touchend', (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) goToSlide(currentIndex - 1);
+        else goToSlide(currentIndex + 1);
+      }
+    }, { passive: true });
+  </script>
+</body>
+</html>
